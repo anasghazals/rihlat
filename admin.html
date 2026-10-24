@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E5C58">
+<title>رحلات تقاد - المالك</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=Tajawal:wght@400;500;700&display=swap">
+<style>
+/* Layout: one phone-width column. Welcome, then a one-time role + profile setup, then a trip list (rider) or a trip form (driver). The dashed road line is the recurring motif. */
+:root{
+  --bg:#EDF1F0; --surface:#FFFFFF; --ink:#12262A; --muted:#566B6E;
+  --line:#D3DDDC; --line-strong:#9FB3B1;
+  --brand:#0E5C58; --brand-ink:#FFFFFF; --soft:#DCEBE9;
+  --accent:#F2B01E; --star:#B7791F; --danger:#B3361F; --ok:#1B6E43; --scrim:rgba(8,20,22,.5);
+  --f-display:'Reem Kufi','Tajawal',system-ui,sans-serif;
+  --f-body:'Tajawal',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C181A; --surface:#14262A; --ink:#E6F0EF; --muted:#93A8AA;
+    --line:#25393D; --line-strong:#4B6468;
+    --brand:#3FB5AC; --brand-ink:#062321; --soft:#1B3338;
+    --star:#F2B01E; --danger:#FF8A73; --ok:#5FD08F; --scrim:rgba(0,0,0,.65);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C181A; --surface:#14262A; --ink:#E6F0EF; --muted:#93A8AA;
+  --line:#25393D; --line-strong:#4B6468;
+  --brand:#3FB5AC; --brand-ink:#062321; --soft:#1B3338;
+  --star:#F2B01E; --danger:#FF8A73; --ok:#5FD08F; --scrim:rgba(0,0,0,.65);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+#app{
+  max-width:520px;margin-inline:auto;
+  padding-block:16px 48px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:grid;gap:20px;
+}
+.road{height:4px;border-radius:2px;background:repeating-linear-gradient(to left,var(--accent) 0 18px,transparent 18px 32px)}
+
+/* top bar */
+.topbar{display:grid;gap:10px}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{background:none;border:0;padding:6px 0;font-family:var(--f-display);font-weight:700;font-size:22px;color:var(--brand)}
+
+/* welcome */
+.welcome{min-height:72vh;display:grid;align-content:space-between;gap:28px;padding-top:24px}
+.welcome h1{margin:0;display:grid;gap:4px;font-size:inherit;line-height:1.1}
+.welcome h1 span{display:block}
+.w-main{display:grid;gap:16px;align-content:start;padding-top:8vh}
+.w-hi{font-family:var(--f-display);font-weight:500;font-size:clamp(26px,8vw,34px)}
+.w-credit{margin:0;text-align:center;color:var(--muted);font-size:15px;padding-top:12px;border-top:2px dashed var(--line)}
+.wordmark{font-family:var(--f-display);font-weight:700;font-size:clamp(44px,14vw,60px);line-height:1.1;margin:0;color:var(--brand)}
+.tagline{margin:0;color:var(--muted);font-size:18px;max-width:30ch}
+
+/* role cards */
+.roles{display:grid;gap:12px}
+.role{display:flex;align-items:center;gap:16px;text-align:start;width:100%;
+  background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:18px}
+.role:hover,.role:active{border-color:var(--brand)}
+.role-ico{flex:none;width:56px;height:56px;border-radius:14px;background:var(--soft);color:var(--brand);display:grid;place-items:center}
+.role-ico svg{width:30px;height:30px}
+.role-t{display:block;font-size:22px;font-weight:700;line-height:1.3}
+.role-s{display:block;color:var(--muted);font-size:15px}
+
+/* sections */
+h2{font-size:22px;line-height:1.3;margin:0;text-wrap:balance}
+.head{display:grid;gap:12px}
+.sec{display:grid;gap:12px}
+.list{display:grid;gap:12px}
+.sub{margin:0;font-size:17px}
+
+/* trip card */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px}
+.route{display:flex;align-items:center;gap:10px}
+.city{font-weight:700;font-size:19px;white-space:nowrap}
+.rline{flex:1;min-width:24px;border-top:2px dashed var(--line-strong)}
+.rarrow{flex:none;width:18px;height:18px;color:var(--line-strong);margin-inline-start:-8px}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;color:var(--muted);font-size:15px}
+.chip{background:var(--soft);color:var(--brand);padding:2px 10px;border-radius:999px;font-weight:500;font-size:14px}
+.chip.full{background:transparent;border:1px solid var(--line-strong);color:var(--muted)}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.price{font-weight:700;font-size:18px}
+.price small{font-weight:400;color:var(--muted);font-size:14px}
+.who{color:var(--muted);font-size:15px;margin:0}
+.pax{margin:0;padding:10px 12px;background:var(--bg);border-radius:10px;font-size:15px;color:var(--muted)}
+
+/* driver row, car photo */
+.drv{display:flex;align-items:center;gap:12px}
+.car{flex:none;width:84px;height:63px;border-radius:10px;object-fit:cover;background:var(--soft);display:block}
+.car.lg{width:96px;height:72px}
+.car.ph{display:grid;place-items:center;color:var(--brand)}
+.car.ph svg{width:34px;height:34px}
+.dtxt{flex:1;min-width:0;display:grid;gap:2px;justify-items:start}
+.dname{font-weight:700;font-size:17px}
+.dcar{color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+.linkbtn{background:none;border:0;padding:0;color:var(--brand);text-decoration:underline;text-underline-offset:3px;text-align:start}
+.star{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:6px 12px;border-radius:999px;
+  border:1.5px solid var(--line-strong);background:transparent;font-weight:500;font-size:14px}
+.star svg{width:18px;height:18px}
+.star[aria-pressed="true"]{border-color:var(--brand);background:var(--soft);color:var(--brand)}
+.star[aria-pressed="true"] svg{fill:currentColor}
+.big{width:100%;aspect-ratio:4/3;max-width:100%;object-fit:cover;border-radius:12px;background:var(--soft);display:block}
+.big.ph{display:grid;place-items:center;color:var(--brand)}
+.big.ph svg{width:56px;height:56px}
+.about{margin:0;color:var(--ink)}
+.rt{color:var(--star)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 20px;border-radius:12px;
+  border:1.5px solid var(--brand);background:var(--brand);color:var(--brand-ink);font-weight:700}
+.btn.block{width:100%}
+.btn.ghost{background:transparent;color:var(--brand)}
+.btn.small{min-height:44px;padding:8px 16px;font-weight:500}
+.btn.danger{background:transparent;border-color:var(--line-strong);color:var(--danger);min-height:44px;padding:8px 16px}
+.btn.danger.armed{background:var(--danger);border-color:var(--danger);color:var(--surface)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.tog{justify-self:start;min-height:44px;padding:8px 16px;border-radius:999px;border:1.5px solid var(--line-strong);background:transparent;font-weight:500}
+.tog[aria-pressed="true"]{border-color:var(--brand);background:var(--soft);color:var(--brand);font-weight:700}
+.dirs{display:grid;gap:8px}
+.dir{min-height:48px;padding:10px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);text-align:start;font-weight:500}
+.dir[aria-pressed="true"]{border-color:var(--brand);background:var(--soft);color:var(--brand);font-weight:700}
+
+/* forms */
+form{display:grid;gap:14px}
+.field{display:grid;gap:6px}
+.field label,.field .lbl{font-weight:500;font-size:15px}
+.field .opt{color:var(--muted);font-weight:400}
+.hint{margin:0;color:var(--muted);font-size:14px}
+.in{width:100%;min-height:48px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font-size:16px}
+textarea.in{min-height:84px;resize:vertical}
+.in:focus{border-color:var(--brand)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.err{margin:0;color:var(--danger);font-size:15px;min-height:1.2em}
+.formcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+.pprev{width:100%;aspect-ratio:4/3;max-width:100%;border-radius:12px;border:1.5px dashed var(--line-strong);background:var(--soft);display:grid;place-items:center;overflow:hidden;color:var(--muted);font-size:15px}
+.pprev img{width:100%;height:100%;object-fit:cover;display:block}
+.row2{display:flex;gap:10px;flex-wrap:wrap}
+.lockwarn{margin:0;padding:12px 14px;border-radius:12px;background:var(--soft);color:var(--ink);font-size:15px}
+.empty{margin:0;padding:20px 16px;border:1.5px dashed var(--line-strong);border-radius:14px;color:var(--muted);display:grid;gap:12px;justify-items:start}
+
+/* ratings */
+.stars{display:flex;gap:4px;justify-content:center}
+.sbtn{background:none;border:0;padding:4px;color:var(--line-strong);min-width:48px;min-height:48px;display:grid;place-items:center}
+.sbtn svg{width:36px;height:36px}
+.sbtn.on{color:var(--star)}
+.sbtn.on svg{fill:currentColor}
+.sdisp{display:inline-flex;gap:2px;vertical-align:middle}
+.sdisp svg{width:16px;height:16px;color:var(--line-strong)}
+.sdisp svg.on{color:var(--star);fill:currentColor}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.rchip{min-height:44px;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line-strong);background:transparent;font-weight:500;font-size:15px}
+.rchip[aria-pressed="true"]{border-color:var(--brand);background:var(--soft);color:var(--brand);font-weight:700}
+.sum{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sum-n{font-family:var(--f-display);font-weight:700;font-size:44px;line-height:1}
+.bars{display:grid;gap:12px}
+.bar{display:grid;gap:4px}
+.bar-top{display:flex;justify-content:space-between;gap:8px;font-size:15px}
+.bar-track{height:10px;border-radius:5px;background:var(--soft);overflow:hidden}
+.bar-fill{height:100%;background:var(--accent);border-radius:5px}
+
+/* sheet + toast */
+.sheet-wrap{position:fixed;inset:0;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;
+  padding-block:20px calc(20px + env(safe-area-inset-bottom, 0px));
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:grid;gap:14px;max-height:90%;overflow-y:auto}
+.toast{position:fixed;z-index:30;inset-inline:16px;bottom:calc(16px + env(safe-area-inset-bottom, 0px));
+  margin-inline:auto;max-width:360px;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:12px;text-align:center;font-weight:500}
+@media (prefers-reduced-motion:no-preference){
+  .role,.btn,.dir,.tog,.star{transition:border-color .15s,background-color .15s}
+}
+
+html{background:var(--bg)}
+body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+</style>
+</head>
+<body>
+<div id="app" dir="rtl" lang="ar">
+  <div class="topbar">
+    <div class="topbar-row"><span class="brand">رحلات تقاد · المالك</span></div>
+    <div class="road" aria-hidden="true"></div>
+  </div>
+  <main>
+    <section id="a-login" class="sec" style="gap:16px">
+      <h2>تقييمات الركاب</h2>
+      <p class="hint">هذه الصفحة لصاحب التطبيق فقط. سجّل الدخول بحساب جوجل الذي كتبت بريده في ملف القواعد.</p>
+      <button class="btn block" type="button" id="loginBtn">سجّل الدخول بحساب جوجل</button>
+      <p class="err" id="loginErr" role="alert"></p>
+    </section>
+    <section id="a-main" class="sec" style="gap:20px" hidden>
+      <h2>تقييمات الركاب</h2>
+      <p class="hint" id="who"></p>
+      <div id="revSummary"></div>
+      <button class="tog" type="button" id="compTog" aria-pressed="false">الشكاوى فقط (٣ نجوم فأقل)</button>
+      <div class="list" id="revList"></div>
+      <button class="btn ghost block" type="button" id="logoutBtn">تسجيل الخروج</button>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import {getFirestore,collection,onSnapshot} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import {FIREBASE_CONFIG} from './firebase-config.js';
+
+var COMPLAINTS=['تأخر عن الموعد','قيادة غير آمنة','السيارة غير نظيفة','الأجرة أعلى من المتفق عليه','سلوك غير محترم','غيّر الرحلة أو ألغاها','أمر آخر'];
+var $=function(id){return document.getElementById(id);};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+var nf=new Intl.NumberFormat('ar-SY'),nf1=new Intl.NumberFormat('ar-SY',{minimumFractionDigits:1,maximumFractionDigits:1});
+var num=function(n){return nf.format(n);};
+var STARSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>';
+function starsHtml(n){
+  var h='<span class="sdisp" role="img" aria-label="'+num(n)+' من '+num(5)+' نجوم">';
+  for(var i=1;i<=5;i++)h+=STARSVG.replace('<svg','<svg class="'+(i<=n?'on':'')+'"');
+  return h+'</span>';
+}
+function fmtDate(s){return new Date(s+'T00:00:00').toLocaleDateString('ar-SY',{weekday:'long',day:'numeric',month:'long'});}
+
+var cfg=FIREBASE_CONFIG||{};
+if(!cfg.apiKey||String(cfg.apiKey).indexOf('الصق')===0){
+  $('loginErr').textContent='لم تُلصق إعدادات Firebase في ملف firebase-config.js بعد.';
+  $('loginBtn').disabled=true;
+}else{
+  var app=initializeApp(cfg,'admin');
+  var auth=getAuth(app),db=getFirestore(app);
+  var feedback={},profiles={},unsubs=[],compOnly=false;
+
+  function render(){
+    var rs=Object.keys(feedback).map(function(k){return feedback[k];}),n=rs.length;
+    if(!n){
+      $('revSummary').innerHTML='<p class="empty">لا توجد تقييمات بعد. تظهر هنا بعد أن يقيّم الركاب رحلاتهم.</p>';
+      $('revList').innerHTML='';return;
+    }
+    var avg=rs.reduce(function(a,r){return a+r.stars;},0)/n;
+    var low=rs.filter(function(x){return x.stars<=3;}).length;
+    var counts=COMPLAINTS.map(function(c){
+      return {r:c,n:rs.filter(function(x){return x.stars<=3&&(x.reasons||[]).indexOf(c)>=0;}).length};
+    }).filter(function(x){return x.n>0;}).sort(function(a,b){return b.n-a.n;});
+    var max=counts.length?counts[0].n:1;
+    var h='<div class="formcard"><div class="sum"><span class="sum-n num">'+nf1.format(avg)+'</span>'+starsHtml(Math.round(avg))
+      +'<span class="hint">من '+num(n)+' تقييم، منها '+num(low)+' بثلاث نجوم أو أقل</span></div>'
+      +'<h3 class="sub">ما الذي يشتكي منه الركاب؟</h3>';
+    h+=counts.length
+      ?'<div class="bars">'+counts.map(function(c){
+          return '<div class="bar"><div class="bar-top"><span>'+esc(c.r)+'</span><span class="num">'+num(c.n)+'</span></div>'
+            +'<div class="bar-track"><div class="bar-fill" style="width:'+Math.round(c.n/max*100)+'%"></div></div></div>';
+        }).join('')+'</div>'
+      :'<p class="hint">لا توجد شكاوى بعد.</p>';
+    h+='</div>';
+    $('revSummary').innerHTML=h;
+    var list=rs.sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);}).filter(function(x){return !compOnly||x.stars<=3;});
+    $('revList').innerHTML=list.length?list.map(function(x){
+      var dn=(profiles[x.driverId]||{}).name||'سائق';
+      return '<article class="card"><div class="meta">'+starsHtml(x.stars)+'</div>'
+        +'<p class="who">'+esc(x.from)+' ← '+esc(x.to)+' · السائق: '+esc(dn)+' · '+esc(fmtDate(x.date))+'</p>'
+        +((x.reasons||[]).length?'<div class="chips">'+x.reasons.map(function(r){return '<span class="chip">'+esc(r)+'</span>';}).join('')+'</div>':'')
+        +(x.text?'<p class="about">'+esc(x.text)+'</p>':'')+'</article>';
+    }).join(''):'<p class="empty">لا توجد شكاوى مطابقة.</p>';
+  }
+  function stop(){unsubs.forEach(function(u){u();});unsubs=[];feedback={};profiles={};}
+  function listen(){
+    stop();
+    unsubs.push(onSnapshot(collection(db,'feedback'),function(s){
+      var m={};s.forEach(function(d){m[d.id]=d.data();});feedback=m;render();
+    },function(e){
+      $('revSummary').innerHTML='<p class="empty">هذا الحساب ليس حساب المالك. تأكد أن بريده مكتوب في ملف القواعد، ثم سجّل الخروج وادخل بالحساب الصحيح.</p>';
+      $('revList').innerHTML='';
+    }));
+    unsubs.push(onSnapshot(collection(db,'profiles'),function(s){
+      var m={};s.forEach(function(d){m[d.id]=d.data();});profiles=m;render();
+    },function(){}));
+  }
+  onAuthStateChanged(auth,function(u){
+    $('a-login').hidden=!!u;$('a-main').hidden=!u;
+    if(u){$('who').textContent='الحساب: '+(u.email||'');listen();}else stop();
+  });
+  $('loginBtn').addEventListener('click',function(){
+    $('loginErr').textContent='';
+    signInWithPopup(auth,new GoogleAuthProvider()).catch(function(e){
+      console.error(e);
+      $('loginErr').textContent=e&&e.code==='auth/unauthorized-domain'
+        ?'أضف نطاق موقعك في Authentication ثم Settings ثم Authorized domains.'
+        :'تعذّر تسجيل الدخول. جرّب مرة أخرى.';
+    });
+  });
+  $('logoutBtn').addEventListener('click',function(){signOut(auth);});
+  $('compTog').addEventListener('click',function(e){compOnly=!compOnly;e.currentTarget.setAttribute('aria-pressed',compOnly);render();});
+}
+</script>
+</body>
+</html>

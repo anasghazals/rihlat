@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E5C58">
+<title>رحلات تقاد</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=Tajawal:wght@400;500;700&display=swap">
+<style>
+/* Layout: one phone-width column. Welcome, then a one-time role + profile setup, then a trip list (rider) or a trip form (driver). The dashed road line is the recurring motif. */
+:root{
+  --bg:#EDF1F0; --surface:#FFFFFF; --ink:#12262A; --muted:#566B6E;
+  --line:#D3DDDC; --line-strong:#9FB3B1;
+  --brand:#0E5C58; --brand-ink:#FFFFFF; --soft:#DCEBE9;
+  --accent:#F2B01E; --star:#B7791F; --danger:#B3361F; --ok:#1B6E43; --scrim:rgba(8,20,22,.5);
+  --f-display:'Reem Kufi','Tajawal',system-ui,sans-serif;
+  --f-body:'Tajawal',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C181A; --surface:#14262A; --ink:#E6F0EF; --muted:#93A8AA;
+    --line:#25393D; --line-strong:#4B6468;
+    --brand:#3FB5AC; --brand-ink:#062321; --soft:#1B3338;
+    --star:#F2B01E; --danger:#FF8A73; --ok:#5FD08F; --scrim:rgba(0,0,0,.65);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C181A; --surface:#14262A; --ink:#E6F0EF; --muted:#93A8AA;
+  --line:#25393D; --line-strong:#4B6468;
+  --brand:#3FB5AC; --brand-ink:#062321; --soft:#1B3338;
+  --star:#F2B01E; --danger:#FF8A73; --ok:#5FD08F; --scrim:rgba(0,0,0,.65);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+#app{
+  max-width:520px;margin-inline:auto;
+  padding-block:16px 48px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:grid;gap:20px;
+}
+.road{height:4px;border-radius:2px;background:repeating-linear-gradient(to left,var(--accent) 0 18px,transparent 18px 32px)}
+
+/* top bar */
+.topbar{display:grid;gap:10px}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{background:none;border:0;padding:6px 0;font-family:var(--f-display);font-weight:700;font-size:22px;color:var(--brand)}
+
+/* welcome */
+.welcome{min-height:72vh;display:grid;align-content:space-between;gap:28px;padding-top:24px}
+.welcome h1{margin:0;display:grid;gap:4px;font-size:inherit;line-height:1.1}
+.welcome h1 span{display:block}
+.w-main{display:grid;gap:16px;align-content:start;padding-top:8vh}
+.w-hi{font-family:var(--f-display);font-weight:500;font-size:clamp(26px,8vw,34px)}
+.w-credit{margin:0;text-align:center;color:var(--muted);font-size:15px;padding-top:12px;border-top:2px dashed var(--line)}
+.wordmark{font-family:var(--f-display);font-weight:700;font-size:clamp(44px,14vw,60px);line-height:1.1;margin:0;color:var(--brand)}
+.tagline{margin:0;color:var(--muted);font-size:18px;max-width:30ch}
+
+/* role cards */
+.roles{display:grid;gap:12px}
+.role{display:flex;align-items:center;gap:16px;text-align:start;width:100%;
+  background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:18px}
+.role:hover,.role:active{border-color:var(--brand)}
+.role-ico{flex:none;width:56px;height:56px;border-radius:14px;background:var(--soft);color:var(--brand);display:grid;place-items:center}
+.role-ico svg{width:30px;height:30px}
+.role-t{display:block;font-size:22px;font-weight:700;line-height:1.3}
+.role-s{display:block;color:var(--muted);font-size:15px}
+
+/* sections */
+h2{font-size:22px;line-height:1.3;margin:0;text-wrap:balance}
+.head{display:grid;gap:12px}
+.sec{display:grid;gap:12px}
+.list{display:grid;gap:12px}
+.sub{margin:0;font-size:17px}
+
+/* trip card */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px}
+.route{display:flex;align-items:center;gap:10px}
+.city{font-weight:700;font-size:19px;white-space:nowrap}
+.rline{flex:1;min-width:24px;border-top:2px dashed var(--line-strong)}
+.rarrow{flex:none;width:18px;height:18px;color:var(--line-strong);margin-inline-start:-8px}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;color:var(--muted);font-size:15px}
+.chip{background:var(--soft);color:var(--brand);padding:2px 10px;border-radius:999px;font-weight:500;font-size:14px}
+.chip.full{background:transparent;border:1px solid var(--line-strong);color:var(--muted)}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.price{font-weight:700;font-size:18px}
+.price small{font-weight:400;color:var(--muted);font-size:14px}
+.who{color:var(--muted);font-size:15px;margin:0}
+.pax{margin:0;padding:10px 12px;background:var(--bg);border-radius:10px;font-size:15px;color:var(--muted)}
+
+/* driver row, car photo */
+.drv{display:flex;align-items:center;gap:12px}
+.car{flex:none;width:84px;height:63px;border-radius:10px;object-fit:cover;background:var(--soft);display:block}
+.car.lg{width:96px;height:72px}
+.car.ph{display:grid;place-items:center;color:var(--brand)}
+.car.ph svg{width:34px;height:34px}
+.dtxt{flex:1;min-width:0;display:grid;gap:2px;justify-items:start}
+.dname{font-weight:700;font-size:17px}
+.dcar{color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+.linkbtn{background:none;border:0;padding:0;color:var(--brand);text-decoration:underline;text-underline-offset:3px;text-align:start}
+.star{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:6px 12px;border-radius:999px;
+  border:1.5px solid var(--line-strong);background:transparent;font-weight:500;font-size:14px}
+.star svg{width:18px;height:18px}
+.star[aria-pressed="true"]{border-color:var(--brand);background:var(--soft);color:var(--brand)}
+.star[aria-pressed="true"] svg{fill:currentColor}
+.big{width:100%;aspect-ratio:4/3;max-width:100%;object-fit:cover;border-radius:12px;background:var(--soft);display:block}
+.big.ph{display:grid;place-items:center;color:var(--brand)}
+.big.ph svg{width:56px;height:56px}
+.about{margin:0;color:var(--ink)}
+.rt{color:var(--star)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 20px;border-radius:12px;
+  border:1.5px solid var(--brand);background:var(--brand);color:var(--brand-ink);font-weight:700}
+.btn.block{width:100%}
+.btn.ghost{background:transparent;color:var(--brand)}
+.btn.small{min-height:44px;padding:8px 16px;font-weight:500}
+.btn.danger{background:transparent;border-color:var(--line-strong);color:var(--danger);min-height:44px;padding:8px 16px}
+.btn.danger.armed{background:var(--danger);border-color:var(--danger);color:var(--surface)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.tog{justify-self:start;min-height:44px;padding:8px 16px;border-radius:999px;border:1.5px solid var(--line-strong);background:transparent;font-weight:500}
+.tog[aria-pressed="true"]{border-color:var(--brand);background:var(--soft);color:var(--brand);font-weight:700}
+.dirs{display:grid;gap:8px}
+.dir{min-height:48px;padding:10px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);text-align:start;font-weight:500}
+.dir[aria-pressed="true"]{border-color:var(--brand);background:var(--soft);color:var(--brand);font-weight:700}
+
+/* forms */
+form{display:grid;gap:14px}
+.field{display:grid;gap:6px}
+.field label,.field .lbl{font-weight:500;font-size:15px}
+.field .opt{color:var(--muted);font-weight:400}
+.hint{margin:0;color:var(--muted);font-size:14px}
+.in{width:100%;min-height:48px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font-size:16px}
+textarea.in{min-height:84px;resize:vertical}
+.in:focus{border-color:var(--brand)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.err{margin:0;color:var(--danger);font-size:15px;min-height:1.2em}
+.formcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+.pprev{width:100%;aspect-ratio:4/3;max-width:100%;border-radius:12px;border:1.5px dashed var(--line-strong);background:var(--soft);display:grid;place-items:center;overflow:hidden;color:var(--muted);font-size:15px}
+.pprev img{width:100%;height:100%;object-fit:cover;display:block}
+.row2{display:flex;gap:10px;flex-wrap:wrap}
+.lockwarn{margin:0;padding:12px 14px;border-radius:12px;background:var(--soft);color:var(--ink);font-size:15px}
+.empty{margin:0;padding:20px 16px;border:1.5px dashed var(--line-strong);border-radius:14px;color:var(--muted);display:grid;gap:12px;justify-items:start}
+
+/* ratings */
+.stars{display:flex;gap:4px;justify-content:center}
+.sbtn{background:none;border:0;padding:4px;color:var(--line-strong);min-width:48px;min-height:48px;display:grid;place-items:center}
+.sbtn svg{width:36px;height:36px}
+.sbtn.on{color:var(--star)}
+.sbtn.on svg{fill:currentColor}
+.sdisp{display:inline-flex;gap:2px;vertical-align:middle}
+.sdisp svg{width:16px;height:16px;color:var(--line-strong)}
+.sdisp svg.on{color:var(--star);fill:currentColor}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.rchip{min-height:44px;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line-strong);background:transparent;font-weight:500;font-size:15px}
+.rchip[aria-pressed="true"]{border-color:var(--brand);background:var(--soft);color:var(--brand);font-weight:700}
+.sum{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sum-n{font-family:var(--f-display);font-weight:700;font-size:44px;line-height:1}
+.bars{display:grid;gap:12px}
+.bar{display:grid;gap:4px}
+.bar-top{display:flex;justify-content:space-between;gap:8px;font-size:15px}
+.bar-track{height:10px;border-radius:5px;background:var(--soft);overflow:hidden}
+.bar-fill{height:100%;background:var(--accent);border-radius:5px}
+
+/* sheet + toast */
+.sheet-wrap{position:fixed;inset:0;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;
+  padding-block:20px calc(20px + env(safe-area-inset-bottom, 0px));
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:grid;gap:14px;max-height:90%;overflow-y:auto}
+.toast{position:fixed;z-index:30;inset-inline:16px;bottom:calc(16px + env(safe-area-inset-bottom, 0px));
+  margin-inline:auto;max-width:360px;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:12px;text-align:center;font-weight:500}
+@media (prefers-reduced-motion:no-preference){
+  .role,.btn,.dir,.tog,.star{transition:border-color .15s,background-color .15s}
+}
+
+html{background:var(--bg)}
+body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+</style>
+</head>
+<body>
+<div id="app" dir="rtl" lang="ar">
+
+  <div class="topbar" id="bar" hidden>
+    <div class="topbar-row">
+      <button class="brand" type="button" data-action="brand">رحلات تقاد</button>
+    </div>
+    <p class="who" id="barWho"></p>
+    <div class="road" aria-hidden="true"></div>
+  </div>
+
+  <main>
+    <!-- WELCOME -->
+    <section id="v-welcome" class="welcome">
+      <div class="w-main">
+        <h1><span class="w-hi">أهلاً بك في</span><span class="wordmark">رحلات تقاد</span></h1>
+        <div class="road" aria-hidden="true"></div>
+        <p class="tagline">سافر مع سائق يتجه إلى وجهتك، أو انشر رحلتك واملأ مقاعدها.</p>
+        <button class="btn block" type="button" id="startBtn" data-action="start" disabled>جارٍ الاتصال…</button>
+      </div>
+      <p class="w-credit">تم تصميم هذا الموقع من قبل أنس غزال</p>
+    </section>
+
+    <!-- GATE -->
+    <section id="v-gate" class="sec" style="gap:16px" hidden>
+      <h2 id="gateTitle">لا يمكن فتح التطبيق</h2>
+      <p class="empty" id="gateMsg"></p>
+    </section>
+
+    <!-- SETUP (first time only) -->
+    <section id="v-setup" class="sec" style="gap:16px" hidden>
+      <div id="setupBody"></div>
+    </section>
+
+    <!-- RIDER -->
+    <section id="v-rider" class="sec" style="gap:20px" hidden>
+      <div class="head">
+        <h2>الرحلات المتاحة</h2>
+        <div class="field">
+          <label for="filter">الوجهة</label>
+          <select id="filter" class="in"></select>
+        </div>
+        <button class="tog" type="button" id="favTog" data-action="favfilter" aria-pressed="false">السائقون المحفوظون فقط</button>
+      </div>
+      <div class="list" id="riderList"></div>
+      <div class="sec" id="myBookingsWrap" hidden>
+        <h2>حجوزاتي</h2>
+        <div class="list" id="myBookings"></div>
+      </div>
+    </section>
+
+    <!-- DRIVER -->
+    <section id="v-driver" class="sec" style="gap:20px" hidden>
+      <h2>ملفي كسائق</h2>
+      <div id="profileBox"></div>
+
+      <h2>انشر رحلة</h2>
+      <div class="formcard">
+        <form id="tripForm" novalidate>
+          <div class="field">
+            <span class="lbl" id="dirLbl">المسار</span>
+            <div class="dirs" role="group" aria-labelledby="dirLbl">
+              <button type="button" class="dir" data-action="dir" data-dir="t2h" aria-pressed="true">من تقاد إلى حلب</button>
+              <button type="button" class="dir" data-action="dir" data-dir="h2t" aria-pressed="false">من حلب إلى تقاد</button>
+              <button type="button" class="dir" data-action="dir" data-dir="other" aria-pressed="false">مسار آخر</button>
+            </div>
+          </div>
+          <div class="two" id="otherRoute" hidden>
+            <div class="field"><label for="dFrom">من</label><select class="in" id="dFrom"></select></div>
+            <div class="field"><label for="dTo">إلى</label><select class="in" id="dTo"></select></div>
+          </div>
+          <div class="two">
+            <div class="field"><label for="dDate">التاريخ</label><input class="in num" type="date" id="dDate" required></div>
+            <div class="field"><label for="dTime">الوقت</label><input class="in num" type="time" id="dTime" value="08:00" required></div>
+          </div>
+          <div class="two">
+            <div class="field"><label for="dSeats">عدد المقاعد</label><input class="in num" type="number" id="dSeats" min="1" max="8" value="3" inputmode="numeric" required></div>
+            <div class="field"><label for="dPrice">الأجرة للمقعد <span class="opt">(ل.س)</span></label><input class="in num" type="number" id="dPrice" min="0" step="1000" inputmode="numeric" placeholder="اختياري"></div>
+          </div>
+          <p class="err" id="tripErr" role="alert"></p>
+          <button class="btn block" type="submit" id="tripBtn">انشر الرحلة</button>
+        </form>
+      </div>
+
+      <h2>رحلاتي</h2>
+      <div class="list" id="myTrips"></div>
+    </section>
+</main>
+
+  <div class="sheet-wrap" id="sheetWrap" hidden>
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></div>
+  </div>
+  <div class="toast" id="toast" role="status" hidden></div>
+</div>
+
+
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import {getAuth,signInAnonymously,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import {getFirestore,collection,doc,onSnapshot,setDoc,addDoc,updateDoc,deleteDoc} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import {FIREBASE_CONFIG} from './firebase-config.js';
+
+(function(){
+  var CITIES=['تقاد','حلب','دمشق','حمص','حماة','اللاذقية','طرطوس','درعا','السويداء','دير الزور','الرقة','إدلب'];
+  var COMPLAINTS=['تأخر عن الموعد','قيادة غير آمنة','السيارة غير نظيفة','الأجرة أعلى من المتفق عليه','سلوك غير محترم','غيّر الرحلة أو ألغاها','أمر آخر'];
+  var PRAISES=['التزم بالموعد','قيادة مريحة','سيارة نظيفة','سائق محترم','أجرة عادلة'];
+  var $=function(id){return document.getElementById(id);};
+
+  var db=null,UID=null,ready=false,failed=null;
+  var data={profiles:{},trips:{},bookings:{},reviews:{}};
+  var favs=[],me=null;
+  var cur='welcome',dir='t2h',favOnly=false,editingProfile=false;
+  var pendingPhoto=null,profileTripId=null,rate=null,setupRole=null;
+
+  var D=function(path){return doc.apply(null,[db].concat(path.split('/')));};
+  var C=function(name){return collection(db,name);};
+
+  /* helpers */
+  function pad(n){return String(n).padStart(2,'0');}
+  function ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function inDays(n){var d=new Date();d.setDate(d.getDate()+n);return ymd(d);}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function arr(m){return Object.keys(m).map(function(k){var o=Object.assign({},m[k]);o.id=k;return o;});}
+  function getTrip(id){var d=data.trips[id];if(!d)return null;var o=Object.assign({},d);o.id=id;return o;}
+
+  var nf,nf1;
+  try{nf=new Intl.NumberFormat('ar-SY');}catch(e){nf=new Intl.NumberFormat();}
+  try{nf1=new Intl.NumberFormat('ar-SY',{minimumFractionDigits:1,maximumFractionDigits:1});}catch(e){nf1=new Intl.NumberFormat(undefined,{minimumFractionDigits:1,maximumFractionDigits:1});}
+  function num(n){return nf.format(n);}
+
+  function seatsLeft(t){
+    var used=0;
+    Object.keys(data.bookings).forEach(function(k){var b=data.bookings[k];if(b.tripId===t.id)used+=b.n;});
+    return t.seats-used;
+  }
+  function seatsText(n){if(n<=0)return 'مكتملة';if(n===1)return 'مقعد واحد متبقٍ';if(n===2)return 'مقعدان متبقيان';if(n<=10)return num(n)+' مقاعد متبقية';return num(n)+' مقعداً متبقياً';}
+  function stamp(t){return new Date(t.date+'T'+t.time);}
+  function upcoming(t){return stamp(t)>=new Date();}
+  function cmp(a,b){return stamp(a)-stamp(b);}
+  function fmtDate(s){
+    var d=new Date(s+'T00:00:00'),today=new Date();today.setHours(0,0,0,0);
+    var diff=Math.round((d-today)/86400000);
+    var base=d.toLocaleDateString('ar-SY',{weekday:'long',day:'numeric',month:'long'});
+    if(diff===0)return 'اليوم، '+base;
+    if(diff===1)return 'غداً، '+base;
+    return base;
+  }
+  function fmtTime(s){var p=s.split(':');var d=new Date();d.setHours(+p[0],+p[1],0,0);return d.toLocaleTimeString('ar-SY',{hour:'numeric',minute:'2-digit'});}
+
+  function drvOf(t){
+    var p=data.profiles[t.driverId]||{};
+    return {id:t.driverId,name:p.name||'سائق',car:p.car||'',about:p.about||'',photo:p.photo||null};
+  }
+  function isFav(id){return favs.indexOf(id)>=0;}
+
+  var ARROW='<svg class="rarrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
+  var CARSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V12l2-5h10l2 5v4"/><path d="M3 16h18v3H3z"/><circle cx="7.5" cy="13.5" r=".6"/><circle cx="16.5" cy="13.5" r=".6"/></svg>';
+  var STARSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>';
+
+  function routeHtml(t){return '<div class="route"><span class="city">'+esc(t.from)+'</span><span class="rline"></span>'+ARROW+'<span class="city">'+esc(t.to)+'</span></div>';}
+  function whenHtml(t){return '<span>'+esc(fmtDate(t.date))+'</span><span class="num">'+esc(fmtTime(t.time))+'</span>';}
+  function priceHtml(t){return t.price?'<span class="price num">'+num(t.price)+' <small>ل.س للمقعد</small></span>':'<span class="price"><small>الأجرة بالاتفاق</small></span>';}
+  function carImg(d,cls){
+    return d.photo?'<img class="car '+(cls||'')+'" src="'+esc(d.photo)+'" alt="مقدمة سيارة '+esc(d.name)+'">'
+                  :'<span class="car ph '+(cls||'')+'" aria-hidden="true">'+CARSVG+'</span>';
+  }
+  function starBtn(id){
+    var on=isFav(id);
+    return '<button class="star" type="button" data-action="fav" data-did="'+esc(id)+'" aria-pressed="'+on+'" aria-label="'+(on?'إزالة السائق من المحفوظين':'احفظ السائق')+'">'+STARSVG+'<span>'+(on?'محفوظ':'احفظ السائق')+'</span></button>';
+  }
+  function ratingOf(driverId){
+    var rs=arr(data.reviews).filter(function(x){return x.driverId===driverId;});
+    if(!rs.length)return null;
+    return {avg:rs.reduce(function(a,x){return a+x.stars;},0)/rs.length,n:rs.length};
+  }
+  function ratingHtml(driverId){
+    var r=ratingOf(driverId);
+    return r?'<span class="dcar"><span class="rt">★</span> '+nf1.format(r.avg)+' ('+num(r.n)+')</span>':'';
+  }
+
+  var toastTimer;
+  function toast(msg){var el=$('toast');el.textContent=msg;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.hidden=true;},3000);}
+  function errMsg(e){
+    var c=e&&e.code;
+    if(c==='permission-denied')return 'ليس لديك صلاحية لهذا الإجراء.';
+    if(c==='resource-exhausted')return 'تجاوز التطبيق الحد المجاني اليوم. جرّب غداً.';
+    if(c==='unavailable')return 'لا يوجد اتصال بالإنترنت. جرّب مرة أخرى.';
+    return 'تعذّر تنفيذ الطلب. جرّب مرة أخرى.';
+  }
+  async function wr(fn,okMsg){
+    try{await fn();if(okMsg)toast(okMsg);return true;}
+    catch(e){console.error(e);toast(errMsg(e));return false;}
+  }
+
+  /* connection */
+  function fail(code){failed=code;updateStart();if(cur!=='welcome')show('gate');}
+  function updateStart(){
+    var b=$('startBtn'),ok=ready||failed;
+    b.disabled=!ok;b.textContent=ok?'ابدأ':'جارٍ الاتصال…';
+  }
+  function sub(name){
+    onSnapshot(C(name),function(s){
+      var m={};s.forEach(function(d){m[d.id]=d.data();});
+      data[name]=m;
+      if(name==='profiles'){ready=true;updateStart();}
+      onData();
+    },function(e){console.error(name,e);if(name==='profiles'&&!ready)fail('nodb');});
+  }
+  function init(){
+    var cfg=FIREBASE_CONFIG||{};
+    if(!cfg.apiKey||String(cfg.apiKey).indexOf('الصق')===0){fail('noconfig');return;}
+    var app=initializeApp(cfg);
+    db=getFirestore(app);
+    var auth=getAuth(app);
+    var started=false;
+    onAuthStateChanged(auth,function(u){
+      if(u&&!started){
+        started=true;UID=u.uid;
+        sub('profiles');sub('trips');sub('bookings');sub('reviews');
+        onSnapshot(D('users/'+UID+'/prefs/main'),function(s){
+          favs=(s.exists()&&s.data().favs)||[];
+          if(cur==='rider')renderRider();
+        },function(){});
+      }
+    });
+    signInAnonymously(auth).catch(function(e){console.error(e);fail('noauth');});
+  }
+
+  function onData(){
+    var had=!!me;
+    me=data.profiles[UID]||null;
+    if(cur==='setup'&&me){route();return;}
+    if((cur==='rider'||cur==='driver')&&!me){route();return;}
+    if(cur==='rider')renderRider();
+    else if(cur==='driver'){if(!editingProfile)renderProfile();renderDriver();}
+    if(me&&!had)$('barWho').textContent=whoText();
+  }
+  function whoText(){return me?((me.role==='driver'?'سائق: ':'راكب: ')+me.name):'';}
+  function route(){
+    if(failed){show('gate');return;}
+    if(!me){show('setup');return;}
+    show(me.role==='driver'?'driver':'rider');
+  }
+
+  /* views */
+  function show(v){
+    cur=v;
+    ['welcome','gate','setup','rider','driver'].forEach(function(n){$('v-'+n).hidden=(n!==v);});
+    $('bar').hidden=(['welcome','gate','setup'].indexOf(v)>=0);
+    if(v!=='setup')$('setupBody').innerHTML='';
+    if(v!=='driver')$('profileBox').innerHTML='';
+    $('barWho').textContent=whoText();
+    if(v==='gate')renderGate();
+    if(v==='setup'){setupRole=null;pendingPhoto=null;renderSetup();}
+    if(v==='rider')renderRider();
+    if(v==='driver'){editingProfile=false;renderProfile();renderDriver();}
+    window.scrollTo(0,0);
+  }
+
+  function renderGate(){
+    var m={
+      noconfig:['الإعدادات ناقصة','لم تُلصق إعدادات Firebase في ملف firebase-config.js بعد. اتبع خطوات الشرح ثم أعد رفع الملفات.'],
+      noauth:['تعذّر تسجيل الدخول','فعّل خيار «Anonymous» من Authentication في Firebase، ثم أعد فتح الصفحة.'],
+      nodb:['تعذّر الوصول إلى قاعدة البيانات','تأكد من إنشاء Firestore ولصق ملف القواعد، ثم أعد فتح الصفحة.']
+    }[failed||'nodb'];
+    $('gateTitle').textContent=m[0];$('gateMsg').textContent=m[1];
+  }
+
+  function fillSelect(el,withAll,sel){
+    var h=withAll?'<option value="">كل الوجهات</option>':'';
+    CITIES.forEach(function(c){h+='<option value="'+esc(c)+'"'+(c===sel?' selected':'')+'>'+esc(c)+'</option>';});
+    el.innerHTML=h;
+  }
+  function setPrev(){
+    var el=$('pPrev');if(!el)return;
+    el.innerHTML=pendingPhoto?'<img src="'+esc(pendingPhoto)+'" alt="معاينة صورة مقدمة السيارة">':'لا توجد صورة بعد';
+    var rm=$('pRemove');if(rm)rm.hidden=!pendingPhoto;
+  }
+  function profileFormHtml(role,p,mode){
+    var h='<form id="profForm" data-mode="'+mode+'" data-role="'+role+'" novalidate>'
+      +'<div class="field"><label for="pName">اسمك</label><input class="in" id="pName" autocomplete="name" maxlength="60" value="'+esc(p?p.name:'')+'" required></div>';
+    if(role==='driver'){
+      h+='<div class="field"><label for="pCar">نوع سيارتك ولونها</label><input class="in" id="pCar" maxlength="60" placeholder="مثال: كيا ريو بيضاء" value="'+esc(p?p.car:'')+'" required></div>'
+        +'<div class="field"><label for="pAbout">نبذة عنك <span class="opt">(اختياري)</span></label><textarea class="in" id="pAbout" maxlength="160" placeholder="مثال: أسافر بين تقاد وحلب كل يوم تقريباً">'+esc(p?p.about:'')+'</textarea></div>'
+        +'<div class="field"><label for="pPhoto">صورة مقدمة سيارتك</label>'
+        +'<div class="pprev" id="pPrev"></div>'
+        +'<input class="in" type="file" id="pPhoto" accept="image/*">'
+        +'<p class="hint">التقط الصورة من الأمام ليظهر لوح السيارة ولونها بوضوح.</p>'
+        +'<div class="row2"><button class="btn danger" type="button" id="pRemove" data-action="rmphoto" hidden>احذف الصورة</button></div></div>';
+    }
+    if(mode==='setup')h+='<p class="lockwarn">بعد الحفظ يبقى دورك «'+(role==='driver'?'سائق':'راكب')+'» ولا يمكن تغييره. تُحفظ معلوماتك فلا تُدخلها مرة أخرى.</p>';
+    h+='<p class="err" id="profErr" role="alert"></p>'
+      +'<button class="btn block" type="submit" id="profBtn">'+(mode==='setup'?'احفظ وابدأ':'احفظ ملفي')+'</button>'
+      +(mode==='setup'?'<button class="btn ghost block" type="button" data-action="setupback">رجوع</button>'
+                      :'<button class="btn ghost block" type="button" data-action="cancelprofile">إلغاء</button>')
+      +'</form>';
+    return h;
+  }
+  function renderSetup(){
+    var box=$('setupBody');
+    if(!setupRole){
+      box.innerHTML='<div class="sec" style="gap:16px"><h2>اختر دورك</h2>'
+        +'<p class="lockwarn">تختار دورك مرة واحدة فقط. بعد الحفظ لا يمكنك التبديل بين راكب وسائق.</p>'
+        +'<div class="roles">'
+        +'<button class="role" type="button" data-action="pickrole" data-role="rider"><span class="role-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></span><span><span class="role-t">أنا راكب</span><span class="role-s">اعرض الرحلات المتاحة واحجز مقعداً</span></span></button>'
+        +'<button class="role" type="button" data-action="pickrole" data-role="driver"><span class="role-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M12 14.5V21M9.8 11 3.3 9.5M14.2 11l6.5-1.5"/></svg></span><span><span class="role-t">أنا سائق</span><span class="role-s">أنشئ ملفك مرة واحدة ثم انشر رحلاتك</span></span></button>'
+        +'</div></div>';
+      return;
+    }
+    box.innerHTML='<div class="formcard"><h2>'+(setupRole==='driver'?'ملفك كسائق':'اسمك كراكب')+'</h2>'+profileFormHtml(setupRole,null,'setup')+'</div>';
+    setPrev();
+  }
+
+  /* rider */
+  function bookingAction(t,b){
+    if(b.rated)return '<span class="chip">قيّمت الرحلة: '+num(b.stars)+' من '+num(5)+'</span>';
+    if(stamp(t)<=new Date())return '<button class="btn" type="button" data-action="rate" data-id="'+t.id+'" data-b="'+b.id+'">قيّم الرحلة</button>';
+    return '<button class="btn danger" type="button" data-action="cancel" data-confirm="1" data-label="إلغاء الحجز" data-b="'+b.id+'">إلغاء الحجز</button>';
+  }
+  function renderRider(){
+    var dest=$('filter').value;
+    var list=arr(data.trips).filter(upcoming)
+      .filter(function(t){return !dest||t.to===dest;})
+      .filter(function(t){return !favOnly||isFav(t.driverId);})
+      .sort(cmp);
+    var h='';
+    list.forEach(function(t){
+      var left=seatsLeft(t),d=drvOf(t);
+      h+='<article class="card">'+routeHtml(t)
+        +'<div class="meta">'+whenHtml(t)+'<span class="chip'+(left<=0?' full':'')+'">'+seatsText(left)+'</span></div>'
+        +'<div class="drv">'+carImg(d)
+        +'<div class="dtxt"><button class="linkbtn dname" type="button" data-action="profile" data-id="'+t.id+'">'+esc(d.name)+'</button>'
+        +(d.car?'<span class="dcar">'+esc(d.car)+'</span>':'')+ratingHtml(t.driverId)+'</div>'
+        +starBtn(t.driverId)+'</div>'
+        +'<div class="foot">'+priceHtml(t)
+        +'<button class="btn" type="button" data-action="book" data-id="'+t.id+'"'+(left<=0?' disabled':'')+'>'+(left<=0?'مكتملة':'احجز مقعداً')+'</button></div></article>';
+    });
+    if(!h){
+      h=favOnly
+        ?'<p class="empty">لا توجد رحلات لسائقيك المحفوظين الآن. اضغط «احفظ السائق» على بطاقة أي رحلة ليظهر هنا.</p>'
+        :'<p class="empty">لا توجد رحلات منشورة'+(dest?' إلى '+esc(dest):'')+' الآن. عندما ينشر سائق رحلته تظهر هنا مباشرة.</p>';
+    }
+    $('riderList').innerHTML=h;
+
+    var mine='';
+    var bs=arr(data.bookings).filter(function(b){return b.riderId===UID&&data.trips[b.tripId];})
+      .map(function(b){return {b:b,t:getTrip(b.tripId)};})
+      .sort(function(x,y){return cmp(x.t,y.t);});
+    bs.forEach(function(x){
+      var t=x.t,b=x.b;
+      mine+='<article class="card">'+routeHtml(t)
+        +'<div class="meta">'+whenHtml(t)+'</div>'
+        +'<p class="who">'+(b.n===1?'مقعد واحد':b.n===2?'مقعدان':num(b.n)+(b.n<=10?' مقاعد':' مقعداً'))+' · السائق: '+esc(drvOf(t).name)+'</p>'
+        +'<div class="foot"><span></span>'+bookingAction(t,b)+'</div></article>';
+    });
+    $('myBookings').innerHTML=mine;
+    $('myBookingsWrap').hidden=!mine;
+  }
+
+  /* driver */
+  function renderProfile(){
+    var p=me,box=$('profileBox');
+    if(!p||p.role!=='driver'){box.innerHTML='';return;}
+    if(!editingProfile){
+      box.innerHTML='<div class="formcard"><div class="drv">'+carImg(p,'lg')
+        +'<div class="dtxt"><span class="dname">'+esc(p.name)+'</span><span class="dcar">'+esc(p.car)+'</span>'+ratingHtml(UID)+'</div></div>'
+        +(p.about?'<p class="about">'+esc(p.about)+'</p>':'')
+        +(p.photo?'':'<p class="hint">أضف صورة لمقدمة سيارتك ليثق بك الركاب.</p>')
+        +'<div class="row2"><button class="btn ghost small" type="button" data-action="editprofile">عدّل ملفي</button></div></div>';
+      return;
+    }
+    pendingPhoto=p.photo||null;
+    box.innerHTML='<div class="formcard">'+profileFormHtml('driver',p,'edit')+'</div>';
+    setPrev();
+  }
+  function renderDriver(){
+    var list=arr(data.trips).filter(function(t){return t.driverId===UID;}).sort(cmp);
+    var h='';
+    list.forEach(function(t){
+      var bks=arr(data.bookings).filter(function(b){return b.tripId===t.id;});
+      var booked=bks.reduce(function(a,b){return a+b.n;},0);
+      var pax=bks.length?'<p class="pax">الركاب: '+bks.map(function(b){return esc(b.name)+' ('+num(b.n)+')';}).join('، ')+'</p>':'';
+      h+='<article class="card">'+routeHtml(t)
+        +'<div class="meta">'+whenHtml(t)+'<span class="chip">'+num(booked)+' من '+num(t.seats)+' محجوزة</span></div>'
+        +pax
+        +'<div class="foot">'+priceHtml(t)
+        +'<button class="btn danger" type="button" data-action="delete" data-confirm="1" data-label="احذف الرحلة" data-id="'+t.id+'">احذف الرحلة</button></div></article>';
+    });
+    if(!h)h='<p class="empty">لم تنشر رحلات بعد. املأ النموذج أعلاه لنشر رحلتك الأولى، وتظهر للركاب فوراً.</p>';
+    $('myTrips').innerHTML=h;
+  }
+  function setDir(d){
+    dir=d;
+    document.querySelectorAll('.dir').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.dir===d);});
+    $('otherRoute').hidden=(d!=='other');
+  }
+
+  /* sheets */
+  function openSheet(id){
+    var t=getTrip(id);
+    if(!t)return;
+    profileTripId=null;
+    var left=seatsLeft(t),max=Math.min(left,6),opts='';
+    for(var i=1;i<=max;i++)opts+='<option value="'+i+'">'+num(i)+'</option>';
+    $('sheet').innerHTML='<h2 id="sheetTitle">احجز مقعداً</h2>'
+      +routeHtml(t)
+      +'<div class="meta">'+whenHtml(t)+'<span>السائق: '+esc(drvOf(t).name)+'</span></div>'
+      +'<form id="bookForm" data-id="'+t.id+'" novalidate>'
+      +'<div class="field"><label for="bN">عدد المقاعد</label><select class="in num" id="bN">'+opts+'</select></div>'
+      +'<p class="err" id="bookErr" role="alert"></p>'
+      +'<button class="btn block" type="submit" id="bookBtn">أكّد الحجز</button>'
+      +'<button class="btn ghost block" type="button" data-action="close">إلغاء</button>'
+      +'</form>';
+    $('sheetWrap').hidden=false;
+  }
+  function openProfile(id){
+    var t=getTrip(id);
+    if(!t)return;
+    profileTripId=id;
+    var d=drvOf(t);
+    $('sheet').innerHTML='<h2 id="sheetTitle">ملف السائق</h2>'
+      +(d.photo?'<img class="big" src="'+esc(d.photo)+'" alt="مقدمة سيارة '+esc(d.name)+'">':'<div class="big ph" aria-hidden="true">'+CARSVG+'</div>')
+      +'<div class="dtxt"><span class="dname">'+esc(d.name)+'</span>'+(d.car?'<span class="dcar">'+esc(d.car)+'</span>':'')+ratingHtml(t.driverId)+'</div>'
+      +(d.about?'<p class="about">'+esc(d.about)+'</p>':'<p class="hint">لم يضف السائق نبذة بعد.</p>')
+      +'<div class="row2">'+starBtn(t.driverId)+'</div>'
+      +'<button class="btn ghost block" type="button" data-action="close">إغلاق</button>';
+    $('sheetWrap').hidden=false;
+  }
+  function openRate(tid,bid){
+    var t=getTrip(tid);
+    if(!t)return;
+    rate={id:tid,b:bid,stars:0,reasons:[]};profileTripId=null;
+    var sb='';
+    for(var i=1;i<=5;i++)sb+='<button type="button" class="sbtn" data-action="star" data-n="'+i+'" aria-pressed="false" aria-label="'+num(i)+' من '+num(5)+'">'+STARSVG+'</button>';
+    $('sheet').innerHTML='<h2 id="sheetTitle">قيّم رحلتك</h2>'
+      +routeHtml(t)
+      +'<div class="meta">'+whenHtml(t)+'<span>السائق: '+esc(drvOf(t).name)+'</span></div>'
+      +'<form id="rateForm" novalidate>'
+      +'<div class="field"><span class="lbl" id="rLbl">كم نجمة تعطي الرحلة؟</span><div class="stars" role="group" aria-labelledby="rLbl">'+sb+'</div></div>'
+      +'<div class="field" id="rWrap" hidden><span class="lbl" id="rrLbl"></span><div class="chips" id="rChips"></div></div>'
+      +'<div class="field"><label for="rText">أضف سبباً أو ملاحظة <span class="opt">(اختياري)</span></label><textarea class="in" id="rText" maxlength="200"></textarea></div>'
+      +'<p class="err" id="rErr" role="alert"></p>'
+      +'<button class="btn block" type="submit" id="rateBtn">أرسل التقييم</button>'
+      +'<button class="btn ghost block" type="button" data-action="close">إلغاء</button>'
+      +'</form>';
+    $('sheetWrap').hidden=false;
+  }
+  function setStars(n){
+    var was=rate.stars,low=n<=3,wasLow=was>0&&was<=3;
+    if(was===0||low!==wasLow)rate.reasons=[];
+    rate.stars=n;
+    document.querySelectorAll('.sbtn').forEach(function(b){var k=+b.dataset.n;b.classList.toggle('on',k<=n);b.setAttribute('aria-pressed',k===n);});
+    var set=low?COMPLAINTS:PRAISES;
+    $('rrLbl').textContent=low?'ما المشكلة؟ اختر ما ينطبق':'ما الذي أعجبك؟';
+    $('rChips').innerHTML=set.map(function(r){
+      return '<button type="button" class="rchip" data-action="rchip" data-r="'+esc(r)+'" aria-pressed="'+(rate.reasons.indexOf(r)>=0)+'">'+esc(r)+'</button>';
+    }).join('');
+    $('rWrap').hidden=false;
+  }
+  function closeSheet(){$('sheetWrap').hidden=true;$('sheet').innerHTML='';profileTripId=null;rate=null;}
+
+  function readPhoto(file,cb){
+    var url=URL.createObjectURL(file),img=new Image();
+    img.onload=function(){
+      var max=720,r=Math.min(1,max/Math.max(img.width,img.height));
+      var w=Math.round(img.width*r),h=Math.round(img.height*r);
+      var c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url);
+      var out=null,qs=[0.72,0.6,0.5,0.4];
+      try{for(var i=0;i<qs.length;i++){out=c.toDataURL('image/jpeg',qs[i]);if(out.length<180000)break;}}catch(e){out=null;}
+      cb(out&&out.length<200000?out:null);
+    };
+    img.onerror=function(){URL.revokeObjectURL(url);cb(null);};
+    img.src=url;
+  }
+
+  /* events */
+  document.addEventListener('click',async function(e){
+    var btn=e.target.closest('[data-action]');
+    if(!btn){if(e.target===$('sheetWrap'))closeSheet();return;}
+    var a=btn.dataset.action;
+
+    if(btn.dataset.confirm&&!btn.dataset.armed){
+      btn.dataset.armed='1';btn.classList.add('armed');btn.textContent='اضغط مرة أخرى للتأكيد';
+      setTimeout(function(){if(btn.isConnected){delete btn.dataset.armed;btn.classList.remove('armed');btn.textContent=btn.dataset.label;}},3000);
+      return;
+    }
+
+    if(a==='start')route();
+    else if(a==='brand'){closeSheet();route();}
+    else if(a==='pickrole'){setupRole=btn.dataset.role;pendingPhoto=null;renderSetup();}
+    else if(a==='setupback'){setupRole=null;renderSetup();}
+    else if(a==='book')openSheet(btn.dataset.id);
+    else if(a==='profile')openProfile(btn.dataset.id);
+    else if(a==='close')closeSheet();
+    else if(a==='dir')setDir(btn.dataset.dir);
+    else if(a==='favfilter'){favOnly=!favOnly;btn.setAttribute('aria-pressed',favOnly);renderRider();}
+    else if(a==='fav'){
+      var did=btn.dataset.did,next=favs.slice(),i=next.indexOf(did);
+      if(i>=0)next.splice(i,1);else next.push(did);
+      var ok=await wr(function(){return setDoc(D('users/'+UID+'/prefs/main'),{favs:next});},i>=0?'أُزيل السائق من المحفوظين':'تم حفظ السائق');
+      if(ok){favs=next;renderRider();if(!$('sheetWrap').hidden&&profileTripId)openProfile(profileTripId);}
+    }
+    else if(a==='rate')openRate(btn.dataset.id,btn.dataset.b);
+    else if(a==='star'&&rate)setStars(+btn.dataset.n);
+    else if(a==='rchip'&&rate){
+      var rr=btn.dataset.r,ri=rate.reasons.indexOf(rr);
+      if(ri>=0)rate.reasons.splice(ri,1);else rate.reasons.push(rr);
+      btn.setAttribute('aria-pressed',ri<0);
+    }
+    else if(a==='editprofile'){editingProfile=true;renderProfile();}
+    else if(a==='cancelprofile'){editingProfile=false;renderProfile();}
+    else if(a==='rmphoto'){pendingPhoto=null;setPrev();var pf=$('pPhoto');if(pf)pf.value='';}
+    else if(a==='cancel'){
+      await wr(function(){return deleteDoc(D('bookings/'+btn.dataset.b));},'تم إلغاء الحجز');
+    }
+    else if(a==='delete'){
+      var tid=btn.dataset.id;
+      await wr(async function(){
+        var bs=arr(data.bookings).filter(function(b){return b.tripId===tid;});
+        for(var k=0;k<bs.length;k++)await deleteDoc(D('bookings/'+bs[k].id));
+        await deleteDoc(D('trips/'+tid));
+      },'تم حذف الرحلة');
+    }
+  });
+
+  document.addEventListener('change',function(e){
+    if(e.target.id==='pPhoto'&&e.target.files&&e.target.files[0]){
+      readPhoto(e.target.files[0],function(d){
+        if(!d){toast('تعذّر استخدام الصورة. جرّب صورة أخرى.');return;}
+        pendingPhoto=d;setPrev();
+      });
+    }
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('sheetWrap').hidden)closeSheet();});
+  $('filter').addEventListener('change',renderRider);
+
+  document.addEventListener('submit',async function(e){
+    e.preventDefault();
+    var f=e.target;
+
+    if(f.id==='profForm'){
+      var mode=f.dataset.mode,role=f.dataset.role;
+      var pn=$('pName').value.trim(),pe=$('profErr');
+      pe.textContent='';
+      if(!pn){pe.textContent='اكتب اسمك.';$('pName').focus();return;}
+      var doc_={role:role,name:pn,createdAt:(me&&me.createdAt)||Date.now()};
+      if(role==='driver'){
+        var pc=$('pCar').value.trim();
+        if(!pc){pe.textContent='اكتب نوع سيارتك ولونها.';$('pCar').focus();return;}
+        doc_.car=pc;doc_.about=$('pAbout').value.trim();doc_.photo=pendingPhoto||null;
+      }
+      var pb=$('profBtn');pb.disabled=true;
+      var ok=await wr(function(){return setDoc(D('profiles/'+UID),doc_);},mode==='setup'?'تم حفظ ملفك':'تم حفظ التغييرات');
+      pb.disabled=false;
+      if(ok&&mode==='edit'){editingProfile=false;renderProfile();}
+    }
+
+    if(f.id==='tripForm'){
+      var err=$('tripErr');
+      err.textContent='';
+      if(!me||me.role!=='driver'){err.textContent='النشر متاح للسائقين فقط.';return;}
+      var from,to;
+      if(dir==='t2h'){from='تقاد';to='حلب';}
+      else if(dir==='h2t'){from='حلب';to='تقاد';}
+      else{from=$('dFrom').value;to=$('dTo').value;}
+      var date=$('dDate').value,time=$('dTime').value,seats=parseInt($('dSeats').value,10),
+          price=$('dPrice').value?parseInt($('dPrice').value,10):null;
+      if(from===to){err.textContent='اختر وجهة مختلفة عن مدينة الانطلاق.';return;}
+      if(!date||!time){err.textContent='حدّد التاريخ والوقت.';return;}
+      if(!(seats>=1&&seats<=8)){err.textContent='عدد المقاعد بين 1 و 8.';$('dSeats').focus();return;}
+      if(new Date(date+'T'+time)<new Date()){err.textContent='موعد الرحلة يجب أن يكون في المستقبل.';return;}
+      var tb=$('tripBtn');tb.disabled=true;
+      await wr(function(){return addDoc(C('trips'),{driverId:UID,from:from,to:to,date:date,time:time,seats:seats,price:price,createdAt:Date.now()});},'تم نشر الرحلة');
+      tb.disabled=false;
+    }
+
+    if(f.id==='bookForm'){
+      var tid2=f.dataset.id,t=getTrip(tid2),n=parseInt($('bN').value,10),be=$('bookErr');
+      if(!t||!upcoming(t)){be.textContent='هذه الرحلة لم تعد متاحة.';return;}
+      if(!me||seatsLeft(t)<n){be.textContent='لا تتوفر مقاعد كافية في هذه الرحلة.';return;}
+      var bb=$('bookBtn');bb.disabled=true;
+      var okb=await wr(function(){return addDoc(C('bookings'),{tripId:tid2,riderId:UID,name:me.name,n:n,createdAt:Date.now()});},'تم الحجز');
+      if(okb)closeSheet();else if(bb.isConnected)bb.disabled=false;
+    }
+
+    if(f.id==='rateForm'){
+      var re=$('rErr');
+      if(!rate||!rate.stars){re.textContent='اختر عدد النجوم أولاً.';return;}
+      var rid=rate.id,rbid=rate.b,stars=rate.stars,reasons=rate.reasons.slice(),text=$('rText').value.trim();
+      var rt=getTrip(rid),rb=data.bookings[rbid];
+      if(!rt||!rb||rb.riderId!==UID){closeSheet();return;}
+      var rbtn=$('rateBtn');rbtn.disabled=true;
+      var okr=await wr(async function(){
+        var base={tripId:rid,bookingId:rbid,driverId:rt.driverId,riderId:UID,from:rt.from,to:rt.to,date:rt.date,stars:stars,createdAt:Date.now()};
+        await addDoc(C('reviews'),base);
+        await addDoc(C('feedback'),Object.assign({},base,{reasons:reasons,text:text}));
+        await updateDoc(D('bookings/'+rbid),{rated:true,stars:stars});
+      },'شكراً على تقييمك');
+      if(okr)closeSheet();else if(rbtn.isConnected)rbtn.disabled=false;
+    }
+  });
+
+  /* init */
+  fillSelect($('filter'),true,'');
+  fillSelect($('dFrom'),false,'دمشق');
+  fillSelect($('dTo'),false,'حمص');
+  $('dDate').min=ymd(new Date());
+  $('dDate').value=inDays(1);
+  setDir('t2h');
+  show('welcome');
+  init();
+})();
+</script>
+</body>
+</html>
