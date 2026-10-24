@@ -275,6 +275,14 @@ img{max-width:100%}
         </form>
       </div>
 
+      <h2>رحلات السائقين الآخرين</h2>
+      <div class="chips" role="group" aria-label="تصفية حسب المسار">
+        <button class="tog" type="button" data-action="ofilter" data-f="all" aria-pressed="true">الكل</button>
+        <button class="tog" type="button" data-action="ofilter" data-f="t2h" aria-pressed="false">تقاد إلى حلب</button>
+        <button class="tog" type="button" data-action="ofilter" data-f="h2t" aria-pressed="false">حلب إلى تقاد</button>
+      </div>
+      <div class="list" id="otherTrips"></div>
+
       <h2>رحلاتي</h2>
       <div class="list" id="myTrips"></div>
     </section>
@@ -302,7 +310,7 @@ import {FIREBASE_CONFIG} from './firebase-config.js';
   var db=null,UID=null,ready=false,failed=null;
   var data={profiles:{},trips:{},bookings:{},reviews:{}};
   var favs=[],me=null;
-  var cur='welcome',dir='t2h',favOnly=false,editingProfile=false;
+  var cur='welcome',dir='t2h',favOnly=false,editingProfile=false,ofilter='all';
   var pendingPhoto=null,profileTripId=null,rate=null,setupRole=null;
 
   var D=function(path){return doc.apply(null,[db].concat(path.split('/')));};
@@ -581,6 +589,31 @@ import {FIREBASE_CONFIG} from './firebase-config.js';
     });
     if(!h)h='<p class="empty">لم تنشر رحلات بعد. املأ النموذج أعلاه لنشر رحلتك الأولى، وتظهر للركاب فوراً.</p>';
     $('myTrips').innerHTML=h;
+    renderOthers();
+  }
+  function renderOthers(){
+    var el=$('otherTrips');
+    if(!el)return;
+    var list=arr(data.trips).filter(upcoming)
+      .filter(function(t){return t.driverId!==UID;})
+      .filter(function(t){
+        if(ofilter==='t2h')return t.from==='تقاد'&&t.to==='حلب';
+        if(ofilter==='h2t')return t.from==='حلب'&&t.to==='تقاد';
+        return true;
+      })
+      .sort(cmp);
+    var h='';
+    list.forEach(function(t){
+      var left=seatsLeft(t),d=drvOf(t);
+      h+='<article class="card">'+routeHtml(t)
+        +'<div class="meta">'+whenHtml(t)+'<span class="chip'+(left<=0?' full':'')+'">'+seatsText(left)+'</span></div>'
+        +'<div class="drv">'+carImg(d)
+        +'<div class="dtxt"><span class="dname">'+esc(d.name)+'</span>'
+        +(d.car?'<span class="dcar">'+esc(d.car)+'</span>':'')+ratingHtml(t.driverId)+'</div></div>'
+        +'<div class="foot">'+priceHtml(t)+'</div></article>';
+    });
+    if(!h)h='<p class="empty">لا توجد رحلات أخرى منشورة'+(ofilter==='all'?'':' على هذا المسار')+' الآن.</p>';
+    el.innerHTML=h;
   }
   function setDir(d){
     dir=d;
@@ -688,6 +721,11 @@ import {FIREBASE_CONFIG} from './firebase-config.js';
     else if(a==='profile')openProfile(btn.dataset.id);
     else if(a==='close')closeSheet();
     else if(a==='dir')setDir(btn.dataset.dir);
+    else if(a==='ofilter'){
+      ofilter=btn.dataset.f;
+      document.querySelectorAll('[data-action="ofilter"]').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.f===ofilter);});
+      renderOthers();
+    }
     else if(a==='favfilter'){favOnly=!favOnly;btn.setAttribute('aria-pressed',favOnly);renderRider();}
     else if(a==='fav'){
       var did=btn.dataset.did,next=favs.slice(),i=next.indexOf(did);
